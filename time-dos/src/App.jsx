@@ -1,26 +1,36 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { FaTrash, FaPlus } from "react-icons/fa";
 import "./App.css";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem("tasks");
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
+
   const [task, setTask] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const addTask = () => {
     if (task.trim()) {
-      setTasks([...tasks, task]);
+      const updatedTasks = [...tasks, task];
+      setTasks(updatedTasks);
       setTask("");
     }
   };
 
   const deleteTask = (index) => {
-    setTasks(tasks.filter((_, i) => i !== index));
+    const updatedTasks = tasks.filter((_, i) => i !== index);
+    setTasks(updatedTasks);
   };
 
   return (
     <div className="app-container">
       <div className="todo-box">
-        <h1>To-Do List</h1>
+        <h1>✅ To-Do List</h1>
         <div className="input-group">
           <input
             type="text"
@@ -28,18 +38,24 @@ function App() {
             onChange={(e) => setTask(e.target.value)}
             placeholder="Add a new task..."
           />
-          <button onClick={addTask}>Add</button>
+          <button onClick={addTask} className="add-btn">
+            <FaPlus />
+          </button>
         </div>
-        <ul>
-          {tasks.map((t, index) => (
-            <li key={index}>
-              <span>{t}</span>
-              <button className="delete-btn" onClick={() => deleteTask(index)}>
-                <FaTrash />
-              </button>
-            </li>
-          ))}
-        </ul>
+        {tasks.length > 0 ? (
+          <ul>
+            {tasks.map((t, index) => (
+              <li key={index} className="task-item">
+                <span>{t}</span>
+                <button className="delete-btn" onClick={() => deleteTask(index)}>
+                  <FaTrash />
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="empty-state">No tasks yet. Start by adding one! ✨</p>
+        )}
       </div>
     </div>
   );
